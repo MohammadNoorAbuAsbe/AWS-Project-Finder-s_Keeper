@@ -1,0 +1,1005 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "API for Finder's Keeper application",
+    "version" : "2026-01-13T20:07:56Z",
+    "title" : "FindersKeeper-API"
+  },
+  "host" : "ueyu3r0khi.execute-api.us-east-1.amazonaws.com",
+  "basePath" : "/prod",
+  "schemes" : [ "https" ],
+  "paths" : {
+    "/" : {
+      "options" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "schema" : {
+              "$ref" : "#/definitions/Empty"
+            },
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Methods" : "'OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "type" : "mock"
+        }
+      }
+    },
+    "/contact" : {
+      "post" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "schema" : {
+              "$ref" : "#/definitions/Empty"
+            },
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            }
+          },
+          "400" : {
+            "description" : "400 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          },
+          "500" : {
+            "description" : "500 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          },
+          "401" : {
+            "description" : "401 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "FindersKeeper-CognitoAuth" : [ ]
+        } ],
+        "x-amazon-apigateway-integration" : {
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:258707291570:function:FindersKeeper-SendContact/invocations",
+          "httpMethod" : "POST",
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\r\n       \"path\": \"$context.resourcePath\",\r\n       \"body\": $input.json('$'),\r\n       \"queryStringParameters\": {\r\n         #foreach($param in $input.params().querystring.keySet())\r\n         \"$param\": \"$util.escapeJavaScript($input.params().querystring.get($param))\"#if($foreach.hasNext),#end\r\n         #end\r\n       },\r\n       \"pathParameters\": {\r\n         #foreach($param in $input.params().path.keySet())\r\n         \"$param\": \"$util.escapeJavaScript($input.params().path.get($param))\"#if($foreach.hasNext),#end\r\n         #end\r\n       },\r\n       \"requestContext\": {\r\n         \"authorizer\": {\r\n           \"claims\": {\r\n             #foreach($claim in $context.authorizer.claims.keySet())\r\n             \"$claim\": \"$context.authorizer.claims.get($claim)\"#if($foreach.hasNext),#end\r\n             #end\r\n           }\r\n         }\r\n       }\r\n     }"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "timeoutInMillis" : 29000,
+          "contentHandling" : "CONVERT_TO_TEXT",
+          "type" : "aws"
+        }
+      },
+      "options" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "schema" : {
+              "$ref" : "#/definitions/Empty"
+            },
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Methods" : "'OPTIONS,POST'",
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "type" : "mock"
+        }
+      }
+    },
+    "/items" : {
+      "get" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "schema" : {
+              "$ref" : "#/definitions/Empty"
+            },
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            }
+          },
+          "400" : {
+            "description" : "400 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          },
+          "500" : {
+            "description" : "500 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          },
+          "401" : {
+            "description" : "401 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:258707291570:function:FindersKeeper-GetItems/invocations",
+          "httpMethod" : "POST",
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\r\n       \"path\": \"$context.resourcePath\",\r\n       \"body\": $input.json('$'),\r\n       \"queryStringParameters\": {\r\n         #foreach($param in $input.params().querystring.keySet())\r\n         \"$param\": \"$util.escapeJavaScript($input.params().querystring.get($param))\"#if($foreach.hasNext),#end\r\n         #end\r\n       },\r\n       \"pathParameters\": {\r\n         #foreach($param in $input.params().path.keySet())\r\n         \"$param\": \"$util.escapeJavaScript($input.params().path.get($param))\"#if($foreach.hasNext),#end\r\n         #end\r\n       },\r\n       \"requestContext\": {\r\n         \"authorizer\": {\r\n           \"claims\": {\r\n             #foreach($claim in $context.authorizer.claims.keySet())\r\n             \"$claim\": \"$context.authorizer.claims.get($claim)\"#if($foreach.hasNext),#end\r\n             #end\r\n           }\r\n         }\r\n       }\r\n     }"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "timeoutInMillis" : 29000,
+          "contentHandling" : "CONVERT_TO_TEXT",
+          "type" : "aws"
+        }
+      },
+      "post" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "schema" : {
+              "$ref" : "#/definitions/Empty"
+            },
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            }
+          },
+          "400" : {
+            "description" : "400 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          },
+          "500" : {
+            "description" : "500 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          },
+          "401" : {
+            "description" : "401 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "FindersKeeper-CognitoAuth" : [ ]
+        } ],
+        "x-amazon-apigateway-integration" : {
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:258707291570:function:FindersKeeper-CreateItem/invocations",
+          "httpMethod" : "POST",
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\r\n       \"path\": \"$context.resourcePath\",\r\n       \"body\": $input.json('$'),\r\n       \"queryStringParameters\": {\r\n         #foreach($param in $input.params().querystring.keySet())\r\n         \"$param\": \"$util.escapeJavaScript($input.params().querystring.get($param))\"#if($foreach.hasNext),#end\r\n         #end\r\n       },\r\n       \"pathParameters\": {\r\n         #foreach($param in $input.params().path.keySet())\r\n         \"$param\": \"$util.escapeJavaScript($input.params().path.get($param))\"#if($foreach.hasNext),#end\r\n         #end\r\n       },\r\n       \"requestContext\": {\r\n         \"authorizer\": {\r\n           \"claims\": {\r\n             #foreach($claim in $context.authorizer.claims.keySet())\r\n             \"$claim\": \"$context.authorizer.claims.get($claim)\"#if($foreach.hasNext),#end\r\n             #end\r\n           }\r\n         }\r\n       }\r\n     }"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "timeoutInMillis" : 29000,
+          "contentHandling" : "CONVERT_TO_TEXT",
+          "type" : "aws"
+        }
+      },
+      "options" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "schema" : {
+              "$ref" : "#/definitions/Empty"
+            },
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Methods" : "'GET,OPTIONS,POST'",
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "type" : "mock"
+        }
+      }
+    },
+    "/items/id" : {
+      "delete" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "schema" : {
+              "$ref" : "#/definitions/Empty"
+            },
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          },
+          "400" : {
+            "description" : "400 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          },
+          "500" : {
+            "description" : "500 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          },
+          "401" : {
+            "description" : "401 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "FindersKeeper-CognitoAuth" : [ ]
+        } ],
+        "x-amazon-apigateway-integration" : {
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:258707291570:function:FindersKeeper-DeleteItem/invocations",
+          "httpMethod" : "POST",
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\r\n       \"path\": \"$context.resourcePath\",\r\n       \"body\": $input.json('$'),\r\n       \"queryStringParameters\": {\r\n         #foreach($param in $input.params().querystring.keySet())\r\n         \"$param\": \"$util.escapeJavaScript($input.params().querystring.get($param))\"#if($foreach.hasNext),#end\r\n         #end\r\n       },\r\n       \"pathParameters\": {\r\n         #foreach($param in $input.params().path.keySet())\r\n         \"$param\": \"$util.escapeJavaScript($input.params().path.get($param))\"#if($foreach.hasNext),#end\r\n         #end\r\n       },\r\n       \"requestContext\": {\r\n         \"authorizer\": {\r\n           \"claims\": {\r\n             #foreach($claim in $context.authorizer.claims.keySet())\r\n             \"$claim\": \"$context.authorizer.claims.get($claim)\"#if($foreach.hasNext),#end\r\n             #end\r\n           }\r\n         }\r\n       }\r\n     }"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "timeoutInMillis" : 29000,
+          "contentHandling" : "CONVERT_TO_TEXT",
+          "type" : "aws"
+        }
+      },
+      "options" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "schema" : {
+              "$ref" : "#/definitions/Empty"
+            },
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Credentials" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Credentials" : "'true'",
+                "method.response.header.Access-Control-Allow-Methods" : "'DELETE,OPTIONS,PATCH'",
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "type" : "mock"
+        }
+      },
+      "patch" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "schema" : {
+              "$ref" : "#/definitions/Empty"
+            },
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            }
+          },
+          "400" : {
+            "description" : "400 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          },
+          "500" : {
+            "description" : "500 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          },
+          "401" : {
+            "description" : "401 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "FindersKeeper-CognitoAuth" : [ ]
+        } ],
+        "x-amazon-apigateway-integration" : {
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:258707291570:function:update_item/invocations",
+          "httpMethod" : "POST",
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\r\n       \"path\": \"$context.resourcePath\",\r\n       \"body\": $input.json('$'),\r\n       \"queryStringParameters\": {\r\n         #foreach($param in $input.params().querystring.keySet())\r\n         \"$param\": \"$util.escapeJavaScript($input.params().querystring.get($param))\"#if($foreach.hasNext),#end\r\n         #end\r\n       },\r\n       \"pathParameters\": {\r\n         #foreach($param in $input.params().path.keySet())\r\n         \"$param\": \"$util.escapeJavaScript($input.params().path.get($param))\"#if($foreach.hasNext),#end\r\n         #end\r\n       },\r\n       \"requestContext\": {\r\n         \"authorizer\": {\r\n           \"claims\": {\r\n             #foreach($claim in $context.authorizer.claims.keySet())\r\n             \"$claim\": \"$context.authorizer.claims.get($claim)\"#if($foreach.hasNext),#end\r\n             #end\r\n           }\r\n         }\r\n       }\r\n     }"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "timeoutInMillis" : 29000,
+          "contentHandling" : "CONVERT_TO_TEXT",
+          "type" : "aws"
+        }
+      }
+    },
+    "/messages" : {
+      "get" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "FindersKeeper-CognitoAuth" : [ ]
+        } ],
+        "x-amazon-apigateway-integration" : {
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:258707291570:function:FindersKeeper-GetMessages/invocations",
+          "httpMethod" : "POST",
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Methods" : "'GET,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              },
+              "responseTemplates" : {
+                "application/json" : "$input.json('$')"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "#set($context = $context)\n{\n  \"path\": \"$context.resourcePath\",\n  \"httpMethod\": \"$context.httpMethod\",\n  \"requestContext\": {\n    \"authorizer\": {\n      \"claims\": {\n        \"sub\": \"$context.authorizer.claims.sub\",\n        \"email\": \"$context.authorizer.claims.email\"\n      }\n    }\n  }\n}"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "type" : "aws"
+        }
+      },
+      "options" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Methods" : "'GET,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "type" : "mock"
+        }
+      }
+    },
+    "/messages/reply" : {
+      "post" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "FindersKeeper-CognitoAuth" : [ ]
+        } ],
+        "x-amazon-apigateway-integration" : {
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:258707291570:function:FindersKeeper-SendReply/invocations",
+          "httpMethod" : "POST",
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Methods" : "'GET,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              },
+              "responseTemplates" : {
+                "application/json" : "$input.json('$')"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "#set($context = $context)\n{\n  \"path\": \"$context.resourcePath\",\n  \"httpMethod\": \"$context.httpMethod\",\n  \"body\": $input.json('$'),\n  \"requestContext\": {\n    \"authorizer\": {\n      \"claims\": {\n        \"sub\": \"$context.authorizer.claims.sub\",\n        \"email\": \"$context.authorizer.claims.email\",\n        \"name\": \"$context.authorizer.claims.name\"\n      }\n    }\n  }\n}"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "type" : "aws"
+        }
+      },
+      "options" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Methods" : "'GET,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "type" : "mock"
+        }
+      }
+    },
+    "/messages/{messageId}" : {
+      "options" : {
+        "consumes" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "messageId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Methods" : "'GET,POST,PUT,PATCH,DELETE,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,Authorization'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "type" : "mock"
+        }
+      }
+    },
+    "/users" : {
+      "get" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "schema" : {
+              "$ref" : "#/definitions/Empty"
+            },
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "FindersKeeper-CognitoAuth" : [ ]
+        } ],
+        "x-amazon-apigateway-integration" : {
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:258707291570:function:FindersKeeper-ListUsers/invocations",
+          "httpMethod" : "POST",
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\n  \"path\": \"$context.resourcePath\",\n  \"body\": $input.json('$'),\n  \"queryStringParameters\": {\n    #foreach($param in $input.params().querystring.keySet())\n    \"$param\": \"$util.escapeJavaScript($input.params().querystring.get($param))\"#if($foreach.hasNext),#end\n    #end\n  },\n  \"pathParameters\": {\n    #foreach($param in $input.params().path.keySet())\n    \"$param\": \"$util.escapeJavaScript($input.params().path.get($param))\"#if($foreach.hasNext),#end\n    #end\n  },\n  \"requestContext\": {\n    \"authorizer\": {\n      \"claims\": {\n        #foreach($claim in $context.authorizer.claims.keySet())\n        \"$claim\": \"$context.authorizer.claims.get($claim)\"#if($foreach.hasNext),#end\n        #end\n      }\n    }\n  }\n}"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "type" : "aws"
+        }
+      },
+      "options" : {
+        "consumes" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Methods" : "'GET,POST,PUT,DELETE,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,Authorization'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "type" : "mock"
+        }
+      }
+    },
+    "/users/{username}" : {
+      "options" : {
+        "consumes" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Methods" : {
+                "type" : "string"
+              },
+              "Access-Control-Allow-Headers" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration" : {
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Methods" : "'GET,PATCH,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior" : "when_no_match",
+          "type" : "mock"
+        }
+      },
+      "patch" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "schema" : {
+              "$ref" : "#/definitions/Empty"
+            },
+            "headers" : {
+              "Access-Control-Allow-Origin" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "FindersKeeper-CognitoAuth" : [ ]
+        } ],
+        "x-amazon-apigateway-integration" : {
+          "uri" : "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:258707291570:function:UpdateUserStatus/invocations",
+          "httpMethod" : "POST",
+          "responses" : {
+            "default" : {
+              "statusCode" : "200",
+              "responseParameters" : {
+                "method.response.header.Access-Control-Allow-Origin" : "'*'"
+              }
+            }
+          },
+          "requestTemplates" : {
+            "application/json" : "{\"username\": \"$input.params('username')\", \"action\": \"$input.path('$.action')\"}"
+          },
+          "passthroughBehavior" : "when_no_templates",
+          "type" : "aws"
+        }
+      }
+    }
+  },
+  "securityDefinitions" : {
+    "FindersKeeper-CognitoAuth" : {
+      "type" : "apiKey",
+      "name" : "Authorization",
+      "in" : "header",
+      "x-amazon-apigateway-authtype" : "cognito_user_pools",
+      "x-amazon-apigateway-authorizer" : {
+        "providerARNs" : [ "arn:aws:cognito-idp:us-east-1:258707291570:userpool/us-east-1_kfNTDWsQD" ],
+        "type" : "cognito_user_pools"
+      }
+    }
+  },
+  "definitions" : {
+    "Empty" : {
+      "type" : "object",
+      "title" : "Empty Schema"
+    }
+  },
+  "x-amazon-apigateway-security-policy" : "SecurityPolicy_TLS13_1_3_2025_09",
+  "x-amazon-apigateway-gateway-responses" : {
+    "DEFAULT_4XX" : {
+      "responseParameters" : {
+        "gatewayresponse.header.Access-Control-Allow-Methods" : "'GET,OPTIONS'",
+        "gatewayresponse.header.Access-Control-Allow-Credentials" : "'true'",
+        "gatewayresponse.header.Access-Control-Allow-Origin" : "'*'",
+        "gatewayresponse.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      }
+    },
+    "DEFAULT_5XX" : {
+      "responseParameters" : {
+        "gatewayresponse.header.Access-Control-Allow-Methods" : "'GET,OPTIONS'",
+        "gatewayresponse.header.Access-Control-Allow-Credentials" : "'true'",
+        "gatewayresponse.header.Access-Control-Allow-Origin" : "'*'",
+        "gatewayresponse.header.Access-Control-Allow-Headers" : "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      }
+    }
+  },
+  "x-amazon-apigateway-endpoint-access-mode" : "BASIC"
+}

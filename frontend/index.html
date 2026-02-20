@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Finder's Keeper | Lost & Found</title>
+    <link href="StyleSheet.css" rel="stylesheet" />
+    <!-- AWS SDK -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.24.min.js"></script>
+    <!-- Amazon Cognito Identity SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <span class="logo">🔍</span>
+            <span class="title">Finder's Keeper</span>
+        </div>
+        <div class="header-search">
+            <input id="searchInput" type="search" placeholder="Search items, colors, or locations…" aria-label="Search items" />
+        </div>
+        <nav class="nav">
+            <button id="loginBtn" class="btn secondary">Login / Register</button>
+            <div id="userNav" style="display: none; align-items: center; gap: 10px;">
+                <a href="profile.html" class="btn secondary" style="text-decoration: none;">👤 My Profile</a>
+                <button id="logoutBtn" class="btn secondary">Logout</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Lost something? Found something?</h1>
+                <p class="subtitle">Connect with your community to reunite lost items.</p>
+                <button class="btn primary" id="heroPostBtn">+ Post Item</button>
+            </div>
+        </section>
+
+        <div class="content-wrapper">
+            <aside class="advanced-filters">
+                <div class="filter-panel">
+                    <h3>🔧 Filters</h3>
+                    <div class="filter-group">
+                        <label for="advancedSearch">🔍 Keyword</label>
+                        <input type="text" id="advancedSearch" placeholder="Color, brand..." />
+                    </div>
+                    <div class="filter-group">
+                        <label for="categoryFilter">📂 Category</label>
+                        <select id="categoryFilter">
+                            <option value="all">All Categories</option>
+                            <option value="Pets">Pets</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Accessories">Accessories</option>
+                            <option value="Clothing">Clothing</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dateFilter">📅 Date</label>
+                        <input type="date" id="dateFilter" />
+                    </div>
+                    <div class="filter-group">
+                        <label for="locationFilter">📍 Location</label>
+                        <select id="locationFilter">
+                            <option value="all">All Locations</option>
+                        </select>
+                    </div>
+                    <button class="clear-filters" id="clearFilters">Clear All Filters</button>
+                </div>
+            </aside>
+
+            <div class="right-content">
+                <section class="filters">
+                    <div class="filter-btns" role="toolbar">
+                        <button class="filter active" data-filter="all">All</button>
+                        <button class="filter" data-filter="lost">Lost</button>
+                        <button class="filter" data-filter="found">Found</button>
+                    </div>
+                    <div class="right-controls">
+                        <div class="stats" id="stats">0 items</div>
+                        <select id="sortSelect" class="sort-select" title="Sort">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+                    </div>
+                </section>
+                <section class="feed" id="feed"></section>
+            </div>
+        </div>
+    </main>
+
+    <div id="loginModal" class="modal-overlay hidden">
+        <div class="register-card">
+            <button class="close-modal" id="closeLogin">&times;</button>
+            <div class="brand-logo">🔍</div>
+
+            <div id="signInArea">
+                <h2>Welcome Back</h2>
+                <p>Login to your account</p>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <input type="email" placeholder="name@email.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn primary-full">Sign In</button>
+                </form>
+                <p class="switch-text">New here? <a href="javascript:void(0)" id="toRegister">Create Account</a></p>
+            </div>
+
+            <div id="signUpArea" style="display: none;">
+                <h2>Create Account</h2>
+                <p>Join our community today</p>
+                <form id="registerForm">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="regFullName" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <input type="email" id="regEmail" placeholder="name@email.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" placeholder="8+ characters" required>
+                    </div>
+                    <button type="submit" class="btn primary-full">Register Now</button>
+                </form>
+                <p class="switch-text">Already have an account? <a href="javascript:void(0)" id="toSignIn">Sign In</a></p>
+            </div>
+
+            <div id="verifyArea" style="display: none;">
+                <h2>✉️ Verify Your Email</h2>
+                <p>We sent a verification code to <strong id="verifyEmail"></strong></p>
+                <p style="font-size: 14px; color: #666;">Check your email (including spam folder)</p>
+                <form id="verifyForm">
+                    <div class="input-group">
+                        <label>Verification Code</label>
+                        <input type="text" id="verificationCode" placeholder="Enter 6-digit code" required maxlength="6" pattern="[0-9]{6}">
+                    </div>
+                    <button type="submit" class="btn primary-full">Verify Email</button>
+                </form>
+                <p class="switch-text">Didn't receive code? <a href="javascript:void(0)" id="resendCode">Resend Code</a></p>
+                <p class="switch-text"><a href="javascript:void(0)" id="backToSignIn">← Back to Sign In</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="aws-config.js"></script>
+    <script src="utils.js"></script>
+    <script src="JavaScript.js"></script>
+</body>
+</html>

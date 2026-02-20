@@ -1,0 +1,261 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Details | Finder's Keeper</title>
+    <link href="StyleSheet.css" rel="stylesheet" />
+    <!-- AWS SDK -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.24.min.js"></script>
+    <!-- Amazon Cognito Identity SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+    <style>
+        /* Local layout for details page */
+        .details-wrapper {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .details-img {
+            width: 100%;
+            border-radius: 15px;
+            object-fit: cover;
+        }
+
+        .info-section h1 {
+            margin: 20px 0;
+            color: white;
+        }
+
+        .info-section p {
+            margin: 10px 0;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .divider {
+            opacity: 0.1;
+            margin: 20px 0;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body style="background: #0b1220; color: white; font-family: sans-serif;">
+
+    <header class="topbar">
+        <div class="brand">
+            <span class="logo">🔍</span>
+            <span class="title">Finder's Keeper</span>
+        </div>
+        <nav class="nav" style="gap: 10px;">
+            <a href="profile.html" class="btn secondary" style="text-decoration: none;" id="profileLink">👤 Profile</a>
+            <a href="index.html" class="btn secondary">← Back to Feed</a>
+        </nav>
+    </header>
+
+    <main id="detailsBox" class="details-wrapper">
+        <div style="text-align: center; padding: 60px 20px;">
+            <h2 style="color: rgba(255,255,255,0.6);">Loading item details...</h2>
+        </div>
+    </main>
+
+    <script src="aws-config.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        const id = utils.getUrlParam('id');
+
+        async function loadItemDetails() {
+            try {
+                await utils.initializeAWS();
+                
+                const profileLink = document.getElementById('profileLink');
+                if (profileLink && !awsService.isAuthenticated()) {
+                    profileLink.style.display = 'none';
+                }
+                const items = await awsService.getItems();
+                
+                const item = items.find(i => i.id == id);
+
+
+                const container = document.getElementById('detailsBox');
+                if (item) {
+                    container.innerHTML = `
+                        <div class="details-grid">
+                            <img src="${utils.escapeHtml(item.img)}" alt="${utils.escapeHtml(item.title)}" class="details-img">
+                            <div class="info-section">
+                                <span class="badge ${item.status}">${item.status}</span>
+                                <h1>${utils.escapeHtml(item.title)}</h1>
+                                <p><strong>📂 Category:</strong> ${utils.escapeHtml(item.category || 'General')}</p>
+                                <p><strong>📍 Location:</strong> ${utils.escapeHtml(item.location)}</p>
+                                <p><strong>📅 Date:</strong> ${item.date}</p>
+                                ${item.createdAt ? `<p><strong>🕒 Posted:</strong> ${utils.formatDate(item.createdAt)}</p>` : ''}
+                                ${item.userName ? `<p><strong>👤 Posted by:</strong> ${utils.escapeHtml(item.userName)}</p>` : ''}
+                                <hr class="divider">
+                                <h3 style="margin-bottom: 10px;">Description:</h3>
+                                <p>${utils.escapeHtml(item.description)}</p>
+                                
+                                <div id="ownerActions" style="display: none; margin-top: 30px; gap: 10px; flex-direction: column;">
+                                    <button class="btn primary" id="markDoneBtn" style="width: 100%; background: #10b981;">
+                                        ✅ Mark as Resolved
+                                    </button>
+                                    <button class="btn secondary" id="deleteBtn" style="width: 100%; background: #ef4444; color: white; border: none;">
+                                        🗑️ Delete Item
+                                    </button>
+                                </div>
+                                
+                                <button class="btn primary" id="contactBtn" style="width: 100%; margin-top: 30px;">
+                                    📞 Contact Owner
+                                </button>
+                                <p style="margin-top: 10px; font-size: 12px; color: #94a3b8; text-align: center;">
+                                    Your email will not be shared publicly
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add contact button functionality
+                    const contactBtn = document.getElementById('contactBtn');
+                    const ownerActions = document.getElementById('ownerActions');
+                    const markDoneBtn = document.getElementById('markDoneBtn');
+                    const deleteBtn = document.getElementById('deleteBtn');
+                    
+                    if (awsService.isAuthenticated()) {
+                        const user = awsService.getCurrentUser();
+                        
+                        if (item.userId === user.userId) {
+                            ownerActions.style.display = 'flex';
+                            contactBtn.style.display = 'none';
+                            
+                            // Check if item is already resolved and disable button
+                            if (item.resolved) {
+                                markDoneBtn.disabled = true;
+                                markDoneBtn.textContent = '✓ Already Resolved';
+                                markDoneBtn.style.opacity = '0.6';
+                                markDoneBtn.style.cursor = 'not-allowed';
+                            }
+                            
+                            // Mark as Done functionality (soft delete - keeps in history)
+                            markDoneBtn.onclick = async () => {
+                                if (item.resolved) return; // Prevent action if already resolved
+                                
+                                if (confirm('Mark this item as resolved? It will be hidden from the main feed but kept in your history.')) {
+                                    try {
+                                        markDoneBtn.disabled = true;
+                                        markDoneBtn.textContent = 'Processing...';
+                                        
+                                        // Use update instead of delete to keep in history
+                                        await awsService.updateItem(item.id, true);
+                                        
+                                        alert('Item marked as resolved! It will remain in your profile history.');
+                                        window.location.href = 'profile.html';
+                                    } catch (error) {
+                                        alert('Failed to mark item as resolved: ' + error.message);
+                                        markDoneBtn.disabled = false;
+                                        markDoneBtn.textContent = '✅ Mark as Resolved';
+                                    }
+                                }
+                            };
+                            
+                            // Delete functionality (permanent deletion)
+                            deleteBtn.onclick = async () => {
+                                if (confirm('WARNING: This will permanently delete the item from the database. This cannot be undone and the item will not appear in your history. Are you sure?')) {
+                                    try {
+                                        deleteBtn.disabled = true;
+                                        deleteBtn.textContent = 'Deleting...';
+                                        
+                                        await awsService.deleteItem(item.id);
+                                        
+                                        alert('Item permanently deleted!');
+                                        window.location.href = 'index.html';
+                                    } catch (error) {
+                                        alert('Failed to delete item: ' + error.message);
+                                        deleteBtn.disabled = false;
+                                        deleteBtn.textContent = '🗑️ Delete Item';
+                                    }
+                                }
+                            };
+                        }
+                    }
+                    
+                    contactBtn.onclick = async () => {
+                        if (!awsService.isAuthenticated()) {
+                            alert('Please log in to contact the item owner');
+                            window.location.href = 'index.html';
+                            return;
+                        }
+                        
+                        const user = awsService.getCurrentUser();
+                        
+                        // Don't allow contacting yourself
+                        if (item.userId === user.userId) {
+                            alert('This is your own item!');
+                            return;
+                        }
+                        
+                        const message = prompt('Enter your message to the item owner:');
+                        if (!message || message.trim() === '') {
+                            return;
+                        }
+                        
+                        contactBtn.disabled = true;
+                        contactBtn.textContent = 'Sending...';
+                        
+                        try {
+                            await awsService.sendContactNotification(
+                                item.id,
+                                message,
+                                user.name,
+                                user.email
+                            );
+                            alert('Message sent successfully! The owner will receive your contact information.');
+                        } catch (error) {
+                            alert('Failed to send message: ' + error.message);
+                        } finally {
+                            contactBtn.disabled = false;
+                            contactBtn.textContent = '📞 Contact Owner';
+                        }
+                    };
+                } else {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px;">
+                            <h1 style='color: white;'>😔 Item not found</h1>
+                            <p style='color: rgba(255,255,255,0.6); margin-top: 20px;'>The item you're looking for doesn't exist or has been removed.</p>
+                            <a href="index.html" class="btn primary" style="display: inline-block; margin-top: 30px;">← Back to Feed</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading item details:', error);
+                const container = document.getElementById('detailsBox');
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <h1 style='color: white;'>⚠️ Error Loading Item</h1>
+                        <p style='color: rgba(255,255,255,0.6); margin-top: 20px;'>There was a problem loading this item. Please try again.</p>
+                        <a href="index.html" class="btn primary" style="display: inline-block; margin-top: 30px;">← Back to Feed</a>
+                    </div>
+                `;
+            }
+        }
+
+        // Load item details on page load
+        loadItemDetails();
+    </script>
+</body>
+</html>

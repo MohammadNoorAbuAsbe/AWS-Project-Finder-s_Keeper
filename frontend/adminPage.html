@@ -1,0 +1,593 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Finder's Keeper</title>
+    <link href="StyleSheet.css" rel="stylesheet" />
+    <!-- AWS SDK -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.24.min.js"></script>
+    <!-- Amazon Cognito Identity SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #0ea5a4;
+            --danger: #ef4444;
+            --text-muted: #94a3b8;
+        }
+
+        body.admin-body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        /* Admin Navbar */
+        .admin-nav {
+            background: var(--card-bg);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .admin-container {
+            padding: 40px 5%;
+        }
+
+        /* Statistics Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+            }
+
+            .stat-card h3 {
+                color: var(--text-muted);
+                font-size: 0.9rem;
+                margin: 0;
+            }
+
+            .stat-card .value {
+                font-size: 2.5rem;
+                font-weight: bold;
+                color: var(--accent);
+                margin-top: 10px;
+            }
+
+        /* Management Tabs */
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+            .tab-btn.active {
+                background: var(--accent);
+                color: white;
+            }
+
+        /* Tables */
+        .admin-table-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+            .admin-table th, .admin-table td {
+                padding: 18px;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+
+            .admin-table th {
+                background: rgba(255,255,255,0.05);
+                color: var(--text-muted);
+                font-weight: 600;
+            }
+
+            .admin-table tr:hover {
+                background: rgba(255,255,255,0.02);
+            }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        /* Action Buttons */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+            .btn-delete:hover {
+                background: var(--danger);
+                color: white;
+            }
+
+        .btn-block {
+            background: rgba(251, 146, 60, 0.1);
+            color: #fb923c;
+            border: 1px solid #fb923c;
+        }
+
+            .btn-block:hover {
+                background: #fb923c;
+                color: white;
+            }
+
+        .btn-unblock {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border: 1px solid #22c55e;
+        }
+
+            .btn-unblock:hover {
+                background: #22c55e;
+                color: white;
+            }
+
+        .user-status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+            .user-status-badge.enabled {
+                background: rgba(34, 197, 94, 0.2);
+                color: #22c55e;
+            }
+
+            .user-status-badge.disabled {
+                background: rgba(239, 68, 68, 0.2);
+                color: #ef4444;
+            }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+            .badge.lost {
+                background: rgba(239, 68, 68, 0.2);
+                color: #f87171;
+            }
+
+            .badge.found {
+                background: rgba(16, 185, 129, 0.2);
+                color: #34d399;
+            }
+
+        .hidden-section {
+            display: none;
+        }
+    </style>
+</head>
+<body class="admin-body">
+
+    <nav class="admin-nav">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="brand-logo" style="margin:0; font-size: 1.5rem;">🔍</div>
+            <h2 style="margin:0;">Control Center</h2>
+        </div>
+        <button id="logoutBtn" class="btn secondary">Logout</button>
+    </nav>
+
+    <div class="admin-container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Items</h3>
+                <div class="value" id="statTotalItems">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Active Users</h3>
+                <div class="value" id="statActiveUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Resolved Cases</h3>
+                <div class="value" id="statResolvedCases">0</div>
+            </div>
+        </div>
+
+        <div class="admin-tabs">
+            <button class="tab-btn active" id="tabItems" onclick="switchSection('items')">Manage Items</button>
+            <button class="tab-btn" id="tabUsers" onclick="switchSection('users')">Manage Customers</button>
+        </div>
+        <div class="search-container" style="margin-bottom: 25px;">
+            <input type="text" id="adminSearch" placeholder="Search for items or customers..."
+                   style="width: 100%; padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: var(--card-bg); color: white; font-size: 1rem;">
+        </div>
+        <div id="itemsSection" class="admin-table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Item Title</th>
+                        <th>Status</th>
+                        <th>Location</th>
+                        <th>Date Reported</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div id="usersSection" class="admin-table-container hidden-section">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Email Address</th>
+                        <th>Join Date</th>
+                        <th>Items Posted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+   
+    <script src="aws-config.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        async function checkAdminAccess() {
+            if (!awsService.initialized) {
+                await awsService.initialize();
+            }
+            
+            if (!awsService.isAuthenticated()) {
+                alert('You must be logged in to access the admin panel');
+                window.location.href = 'index.html';
+                return false;
+            }
+            
+            if (!awsService.isAdmin()) {
+                alert('Access denied: Admin privileges required');
+                window.location.href = 'index.html';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        const searchInput = document.getElementById('adminSearch');
+
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const activeTab = document.querySelector('.tab-btn.active').id;
+
+            if (activeTab === 'tabItems') {
+                const filteredItems = items.filter(it =>
+                    it.title.toLowerCase().includes(term) ||
+                    it.location.toLowerCase().includes(term)
+                );
+                renderFilteredItems(filteredItems);
+            } else {
+                const rows = document.querySelectorAll('#usersTableBody tr');
+                rows.forEach(row => {
+                    const text = row.innerText.toLowerCase();
+                    row.style.display = text.includes(term) ? '' : 'none';
+                });
+            }
+        });
+
+        function renderFilteredItems(filteredList) {
+            const tbody = document.getElementById('itemsTableBody');
+            tbody.innerHTML = filteredList.map(it => `
+                <tr>
+                    <td><strong>${it.title}</strong></td>
+                    <td><span class="badge ${it.status}">${it.status}</span></td>
+                    <td>${it.location}</td>
+                    <td>${it.date}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-sm btn-delete" onclick="removeItem('${it.id}')">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    </script>
+
+    <script>
+        let items = [];
+        let users = [];
+        
+        async function loadAdminData() {
+            const hasAccess = await checkAdminAccess();
+            if (!hasAccess) return;
+            
+            try {
+                items = await awsService.getItems(50);
+                renderAdminItems();
+                
+                users = await awsService.listUsers();
+                renderAdminUsers();
+                
+                updateStats();
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                alert('Failed to load data. Please refresh the page.');
+            }
+        }
+
+        // Switch between Items and Users sections
+        function switchSection(section) {
+            const itemsSec = document.getElementById('itemsSection');
+            const usersSec = document.getElementById('usersSection');
+            const tabItems = document.getElementById('tabItems');
+            const tabUsers = document.getElementById('tabUsers');
+
+            if (section === 'items') {
+                itemsSec.classList.remove('hidden-section');
+                usersSec.classList.add('hidden-section');
+                tabItems.classList.add('active');
+                tabUsers.classList.remove('active');
+            } else {
+                usersSec.classList.remove('hidden-section');
+                itemsSec.classList.add('hidden-section');
+                tabUsers.classList.add('active');
+                tabItems.classList.remove('active');
+            }
+        }
+
+        // Render the items table
+        function renderAdminItems() {
+            const tbody = document.getElementById('itemsTableBody');
+            tbody.innerHTML = items.map(it => `
+                <tr>
+                    <td><strong>${it.title}</strong></td>
+                    <td><span class="badge ${it.status}">${it.status}</span></td>
+                    <td>${it.location}</td>
+                    <td>${it.date}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-sm btn-delete" onclick="removeItem('${it.id}')">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            updateStats();
+        }
+
+        function renderAdminUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            
+            const regularUsers = users.filter(user => {
+                const groups = user.groups || user['cognito:groups'];
+                if (!groups) return true; // Include users with no groups
+                
+                // Check if user is in Admins group
+                if (Array.isArray(groups)) {
+                    return !groups.includes('Admins');
+                } else if (typeof groups === 'string') {
+                    return !groups.split(',').includes('Admins');
+                }
+                return true; // Include if groups format is unexpected
+            });
+            
+            if (regularUsers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px;">
+                            <p style="color: var(--text-muted);">No regular users found.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = regularUsers.map(user => {
+                const avatar = (user.name || user.email).charAt(0).toUpperCase();
+                const itemCount = items.filter(item => item.userId === user.username).length;
+                const joinDate = new Date(user.created).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                // Determine user status
+                const isEnabled = user.enabled !== false; // Default to enabled if not specified
+                const statusBadge = isEnabled 
+                    ? '<span class="user-status-badge enabled">Active</span>' 
+                    : '<span class="user-status-badge disabled">Blocked</span>';
+                
+                // Choose appropriate button
+                const actionButton = isEnabled
+                    ? `<button class="btn-sm btn-block" onclick="updateUserStatus('${user.username}', 'block')">Block User</button>`
+                    : `<button class="btn-sm btn-unblock" onclick="updateUserStatus('${user.username}', 'unblock')">Unblock User</button>`;
+                
+                return `
+                    <tr data-username="${user.username}">
+                        <td>
+                            <div class="user-info">
+                                <div class="user-avatar">${avatar}</div>
+                                <span>${user.name || 'Unknown'}${statusBadge}</span>
+                            </div>
+                        </td>
+                        <td>${user.email}</td>
+                        <td>${joinDate}</td>
+                        <td>${itemCount}</td>
+                        <td>
+                            <div class="action-btns">
+                                ${actionButton}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Delete item function
+        async function removeItem(id) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                try {
+                    await awsService.deleteItem(id);
+                    alert('Item has been removed successfully.');
+                    // Reload data
+                    await loadAdminData();
+                } catch (error) {
+                    console.error('Error deleting item:', error);
+                    alert('Failed to delete item. Please try again.');
+                }
+            }
+        }
+
+        // Block/Unblock user function
+        async function updateUserStatus(username, action) {
+            const actionText = action === 'block' ? 'block' : 'unblock';
+            const confirmMsg = action === 'block' 
+                ? `Are you sure you want to block ${username}? They will not be able to access the platform.`
+                : `Are you sure you want to unblock ${username}? They will regain access to the platform.`;
+            
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+            
+            try {
+                // Show loading state
+                const row = document.querySelector(`tr[data-username="${username}"]`);
+                if (row) {
+                    row.style.opacity = '0.5';
+                    row.style.pointerEvents = 'none';
+                }
+                
+                // Call AWS service to update user status
+                const result = await awsService.updateUserStatus(username, action);
+                
+                // Show success message
+                const successMsg = action === 'block'
+                    ? `${username} has been blocked successfully`
+                    : `${username} has been unblocked successfully`;
+                alert(successMsg);
+                
+                // Reload user list to reflect changes
+                users = await awsService.listUsers();
+                renderAdminUsers();
+                
+            } catch (error) {
+                console.error('Failed to update user status:', error);
+                
+                // Restore row state
+                const row = document.querySelector(`tr[data-username="${username}"]`);
+                if (row) {
+                    row.style.opacity = '1';
+                    row.style.pointerEvents = 'auto';
+                }
+                
+                alert(`Failed to ${actionText} user: ${error.message}`);
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalItems = items.length;
+            // Filter out admin users from active users count
+            const regularUsers = users.filter(user => {
+                const groups = user.groups || user['cognito:groups'];
+                if (!groups) return true;
+                
+                if (Array.isArray(groups)) {
+                    return !groups.includes('Admins');
+                } else if (typeof groups === 'string') {
+                    return !groups.split(',').includes('Admins');
+                }
+                return true;
+            });
+            const activeUsers = regularUsers.length;
+            const resolvedItems = items.filter(it => it.resolved === true).length;
+            
+            document.getElementById('statTotalItems').textContent = totalItems;
+            document.getElementById('statActiveUsers').textContent = activeUsers;
+            document.getElementById('statResolvedCases').textContent = resolvedItems;
+        }
+
+        // Initial Load
+        window.onload = loadAdminData;
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            awsService.logout();
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

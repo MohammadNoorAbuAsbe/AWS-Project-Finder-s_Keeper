@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages | Finder's Keeper</title>
+    <link href="StyleSheet.css" rel="stylesheet" />
+    <!-- AWS SDK -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.24.min.js"></script>
+    <!-- Amazon Cognito Identity SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+    <style>
+        .messages-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 150px);
+        }
+
+        .threads-sidebar {
+            width: 350px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-header h2 {
+            color: white;
+            margin: 0 0 5px 0;
+            font-size: 20px;
+        }
+
+        .chat-header .meta {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .messages-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .message-bubble.sent {
+            align-self: flex-end;
+            background: #3b82f6;
+            color: white;
+        }
+
+        .message-bubble.received {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .message-bubble .sender {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .message-bubble .text {
+            margin-bottom: 5px;
+        }
+
+        .message-bubble .time {
+            font-size: 11px;
+            opacity: 0.6;
+            text-align: right;
+        }
+
+        .reply-box {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+        }
+
+        .reply-box textarea {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .reply-box button {
+            padding: 12px 24px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .reply-box button:hover {
+            background: #2563eb;
+        }
+
+        .reply-box button:disabled {
+            background: #64748b;
+            cursor: not-allowed;
+        }
+
+        .thread-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .thread-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .thread-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-left-color: #3b82f6;
+        }
+
+        .thread-title {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .thread-meta {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+
+        .thread-preview {
+            color: #cbd5e1;
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .no-threads {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .no-threads h2 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .empty-chat {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+        }
+
+        .empty-chat h2 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            margin: 15px 0;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .message-actions .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .no-messages {
+            text-align: center;
+            padding: 80px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .no-messages h2 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-tabs button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-tabs button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-tabs button.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+    </style>
+</head>
+<body style="background: #0b1220; color: white; font-family: sans-serif; min-height: 100vh;">
+
+    <header class="topbar">
+        <div class="brand">
+            <span class="logo">🔍</span>
+            <span class="title">Finder's Keeper</span>
+        </div>
+        <nav class="nav" style="gap: 10px;">
+            <a href="index.html" class="btn secondary">🏠 Home</a>
+            <a href="profile.html" class="btn secondary">👤 Profile</a>
+            <a href="#" class="btn primary" id="logoutBtn" style="display: none;">Logout</a>
+        </nav>
+    </header>
+
+    <div style="text-align: center; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <h1 style="margin: 0;">💬 Conversations</h1>
+        <p style="color: #94a3b8; margin: 5px 0;">Private messages about your items</p>
+    </div>
+
+    <div class="messages-container">
+        <!-- Threads Sidebar -->
+        <div class="threads-sidebar">
+            <h3 style="margin: 0 0 15px 0; color: white;">Your Conversations</h3>
+            <div id="threadsList"></div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area" id="chatArea">
+            <div class="empty-chat">
+                <div>
+                    <h2>💬</h2>
+                    <p>Select a conversation to start chatting</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="aws-config.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        let allThreads = [];
+        let currentThread = null;
+        let currentUser = null;
+        let refreshInterval = null;
+
+        // Check authentication
+        async function checkAuth() {
+            if (!awsService.initialized) {
+                await awsService.initialize();
+            }
+
+            if (!awsService.isAuthenticated()) {
+                alert('Please log in to view your messages');
+                window.location.href = 'index.html';
+                return false;
+            }
+
+            // Get current user info
+            currentUser = await awsService.getCurrentUser();
+            document.getElementById('logoutBtn').style.display = 'block';
+            return true;
+        }
+
+        // Load conversation threads
+        async function loadThreads() {
+            try {
+                const result = await awsService.getMessages();
+                
+                // Handle both direct array and wrapped response
+                if (result.success && result.threads) {
+                    allThreads = result.threads;
+                } else if (Array.isArray(result)) {
+                    allThreads = result;
+                } else {
+                    allThreads = result.threads || [];
+                }
+                
+                displayThreads();
+                
+                // If a thread is currently open, refresh it with updated data
+                if (currentThread) {
+                    const updatedThread = allThreads.find(t => t.threadId === currentThread.threadId);
+                    if (updatedThread) {
+                        // Check if there are new messages
+                        const hadNewMessages = updatedThread.messages.length > currentThread.messages.length;
+                        currentThread = updatedThread;
+                        
+                        // Refresh the chat view
+                        const wasAtBottom = isScrolledToBottom();
+                        displayChat(updatedThread, true);
+                        
+                        // Auto-scroll to bottom if user was already at bottom or if new messages arrived
+                        if (wasAtBottom || hadNewMessages) {
+                            scrollToBottom();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading threads:', error);
+                const container = document.getElementById('threadsList');
+                container.innerHTML = `
+                    <div class="no-threads">
+                        <p>Failed to load conversations</p>
+                        <p style="font-size: 12px; margin-top: 10px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Check if messages list is scrolled to bottom
+        function isScrolledToBottom() {
+            const messagesList = document.getElementById('messagesList');
+            if (!messagesList) return true;
+            const threshold = 100; // pixels from bottom
+            return messagesList.scrollHeight - messagesList.scrollTop - messagesList.clientHeight < threshold;
+        }
+        
+        // Scroll messages to bottom
+        function scrollToBottom() {
+            const messagesList = document.getElementById('messagesList');
+            if (messagesList) {
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }
+        }
+
+        // Display threads list
+        function displayThreads() {
+            const container = document.getElementById('threadsList');
+            
+            if (allThreads.length === 0) {
+                container.innerHTML = `
+                    <div class="no-threads">
+                        <h2>📭</h2>
+                        <p>No conversations yet</p>
+                        <p style="margin-top: 15px; font-size: 13px;">
+                            <a href="index.html" style="color: #3b82f6;">Browse items</a> to start a conversation
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = allThreads.map(thread => {
+                const lastMsg = thread.messages[thread.messages.length - 1];
+                const preview = lastMsg.message.substring(0, 50) + (lastMsg.message.length > 50 ? '...' : '');
+                
+                return `
+                    <div class="thread-item" onclick="openThread('${thread.threadId}')">
+                        <div class="thread-title">
+                            <span>${escapeHtml(thread.itemTitle)}</span>
+                        </div>
+                        <div class="thread-meta">
+                            👤 ${escapeHtml(thread.otherUserName)}
+                        </div>
+                        <div class="thread-preview">
+                            ${escapeHtml(preview)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Open a conversation thread
+        function openThread(threadId) {
+            const thread = allThreads.find(t => t.threadId === threadId);
+            if (!thread) return;
+
+            currentThread = thread;
+
+            // Update active state
+            document.querySelectorAll('.thread-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.thread-item').classList.add('active');
+
+            // Display chat
+            displayChat(thread);
+            displayThreads();
+        }
+
+        // Display chat messages
+        function displayChat(thread, isRefresh = false) {
+            const chatArea = document.getElementById('chatArea');
+            
+            const messagesHtml = thread.messages.map(msg => {
+                const isSent = msg.senderUserId === currentUser.userId;
+                const date = new Date(msg.createdAt);
+                const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                return `
+                    <div class="message-bubble ${isSent ? 'sent' : 'received'}">
+                        <div class="sender">${isSent ? 'You' : escapeHtml(msg.senderName)}</div>
+                        <div class="text">${escapeHtml(msg.message).replace(/\n/g, '<br>')}</div>
+                        <div class="time">${timeStr}</div>
+                    </div>
+                `;
+            }).join('');
+
+            chatArea.innerHTML = `
+                <div class="chat-header">
+                    <h2>${escapeHtml(thread.itemTitle)}</h2>
+                    <div class="meta">
+                        Conversation with ${escapeHtml(thread.otherUserName)} •
+                        <a href="itemDetails.html?id=${thread.itemId}" style="color: #3b82f6;">View Item</a>
+                    </div>
+                </div>
+                <div class="messages-list" id="messagesList">
+                    ${messagesHtml}
+                </div>
+                <div class="reply-box">
+                    <textarea id="replyInput" placeholder="Type your message..." rows="2"></textarea>
+                    <button onclick="sendReply()" id="sendBtn">Send</button>
+                </div>
+            `;
+
+            // Only scroll and focus if not a background refresh
+            if (!isRefresh) {
+                // Scroll to bottom
+                scrollToBottom();
+
+                // Focus on input
+                document.getElementById('replyInput').focus();
+
+                // Enable enter to send
+                document.getElementById('replyInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendReply();
+                    }
+                });
+            } else {
+                // For refresh, re-attach the enter key listener if input exists
+                const replyInput = document.getElementById('replyInput');
+                if (replyInput) {
+                    replyInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            sendReply();
+                        }
+                    });
+                }
+            }
+        }
+
+        // Send reply
+        async function sendReply() {
+            if (!currentThread) return;
+
+            const input = document.getElementById('replyInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+
+            try {
+                await awsService.sendReply({
+                    itemId: currentThread.itemId,
+                    recipientUserId: currentThread.otherUserId,
+                    message: message
+                });
+
+                // Clear input
+                input.value = '';
+
+                // Reload threads to get updated conversation
+                await loadThreads();
+
+                // Re-open the current thread
+                const updatedThread = allThreads.find(t => t.threadId === currentThread.threadId);
+                if (updatedThread) {
+                    currentThread = updatedThread;
+                    displayChat(updatedThread);
+                }
+
+            } catch (error) {
+                alert('Failed to send message: ' + error.message);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send';
+            }
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            awsService.logout();
+            window.location.href = 'index.html';
+        });
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize on page load
+        (async () => {
+            if (await checkAuth()) {
+                await loadThreads();
+                
+                // Start auto-refresh every 30 seconds
+                refreshInterval = setInterval(() => {
+                    // Only refresh if page is visible
+                    if (!document.hidden) {
+                        loadThreads();
+                    }
+                }, 30000); 
+            }
+        })();
+        
+        // Clear interval when page is unloaded
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+        
+        // Pause refresh when page is hidden, resume when visible
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                loadThreads();
+            }
+        });
+    </script>
+</body>
+</html>

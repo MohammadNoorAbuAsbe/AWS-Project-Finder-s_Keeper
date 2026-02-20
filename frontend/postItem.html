@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post New Item | Finder's Keeper</title>
+    <link rel="stylesheet" href="StyleSheet.css">
+    <!-- AWS SDK -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.24.min.js"></script>
+    <!-- Amazon Cognito Identity SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+</head>
+<body class="form-page">
+    <header class="topbar">
+        <div class="brand">
+            <span class="logo">🔍</span>
+            <span class="title">Finder's Keeper</span>
+        </div>
+        <nav class="nav">
+            <a href="profile.html" class="btn secondary" style="text-decoration: none;">👤 Profile</a>
+            <a href="index.html" class="btn secondary">Back to Feed</a>
+        </nav>
+    </header>
+
+    <main class="form-container">
+        <form id="postItemForm" class="glass-form">
+            <h2>📢 Post an Item</h2>
+            <p class="form-subtitle">Fill in the details to help the community.</p>
+
+            <div class="form-grid">
+                <div class="upload-section">
+                    <div id="imagePreview" class="image-placeholder">
+                        <span>📸 Click to upload image *</span>
+                    </div>
+                    <input type="file" id="itemImage" accept="image/*" required hidden>
+                    <button type="button" class="btn secondary-sm" onclick="document.getElementById('itemImage').click()">
+                        Select Photo *
+                    </button>
+                </div>
+
+                <div class="details-section">
+                    <div class="input-group">
+                        <label>Status</label>
+                        <div class="status-toggle">
+                            <input type="radio" name="itemStatus" id="lost" value="lost" checked>
+                            <label for="lost" class="toggle-btn">Lost</label>
+
+                            <input type="radio" name="itemStatus" id="found" value="found">
+                            <label for="found" class="toggle-btn">Found</label>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="title">Item Title</label>
+                        <input type="text" id="title" placeholder="e.g., Blue iPhone 13" required minlength="3" maxlength="100" aria-required="true">
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="category">Category</label>
+                            <select id="category">
+                                <option value="Pets">Pets</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="Clothing">Clothing</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" placeholder="Where was it seen?" required minlength="3" maxlength="100" aria-required="true">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" rows="3" placeholder="Add unique details (color, marks)..." maxlength="500"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn primary-full">Publish Item</button>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <script src="aws-config.js"></script>
+    <script src="utils.js"></script>
+    <script src="postItemJS.js"></script>
+</body>
+</html>
